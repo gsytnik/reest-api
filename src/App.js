@@ -1,87 +1,60 @@
-import React, { Component } from 'react'
-import Table from './Table'
-import Form from './Form'
-import axios from 'axios'
-
-
-
-class App extends Component {
   
-  	state = {
-	 	characters: [
-		  {
-		    name: 'Charlie',
-		    job: 'Janitor',
-		  },
-		  {
-		    name: 'Mac',
-		    job: 'Bouncer',
-		  },
-		  {
-		    name: 'Dee',
-		    job: 'Aspring actress',
-		  },
-		  {
-		    name: 'Dennis',
-		    job: 'Bartender',
-		  },
-		]
-	}
+import React, { Component, useState, useEffect } from 'react';
+import axios from 'axios';
 
-	removeCharacter = index => {
-	  const { characters } = this.state
+import Table from './Table';
+import Form from './Form';
 
-	  this.setState({
-	    characters: characters.filter((character, i) => {
-	      return i !== index
-	    }),
-	  })
-	}
-	
-	handleSubmit = character => {
-   		this.makePostCall(character).then( callResult => {
-      		if (callResult === true) {
-         		this.setState({ characters: [...this.state.characters, character] });
-      		}
-   		});
- 	}
+function App() {
+  const [ characters, setCharacters] = useState([]);
 
- 	makePostCall(character){
-   		return axios.post('http://localhost:5000/users', character)
-    		.then(function (response) {
-      		console.log(response);
-      		return (response.status === 201);
-    		})
-    	  .catch(function (error) {
-      		console.log(error);
-      		return false;
-    	});
- 	}
+  const removePerson = (id) => {
+    axios.delete('http://localhost:5000/users/${id}')
+      .then(res => {
+        // 204 status code means the action was successfully enacted
+        if (res.status === 204) {
+          setCharacters(
+            characters.filter((character, _) => {
+              return character.id !== id;
+            }),
+          );
+        }
+      });
+  }
 
-	render() {
-		const { characters } = this.state;
-		
-		return (
-			<div className="container">
-				<Table characterData={characters} removeCharacter={this.removeCharacter} />
-				<Form handleSubmit={this.handleSubmit} />
-			</div>
-		);
-	}
+  const handleSubmit = (character) => {
+    axios.post('http://localhost:5000/users', character)
+      .then(res => {
+        if (res.status === 201) {
+          setCharacters([...characters, res.data])
+        }
+      }).catch(err => {
+        console.log(err);
+        return false;
+      });
+  }
 
-	componentDidMount() {
-	   axios.get('http://localhost:5000/users')
-	    .then(res => {
-	      const characters = res.data.users_list;
-	      this.setState({ characters });
-	    })
-		    .catch(function (error) {
-	      //Not handling the error. Just logging into the console.
-	      console.log(error);
-	    });
-	}
-  	
-    
-}
+  const fetchUsers = () => {
+    axios.get('http://localhost:5000/users')
+      .then(res => {
+        const characters = res.data.users_list;
+        setCharacters(characters);
+      }).catch(err => {
+        console.log(err);
+      })
+  }
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  return (
+    <div className="container">
+      <Table peopleData={characters} removePerson={removePerson} />
+      <Form handleSubmit={handleSubmit}/>
+      {}
+    </div>
+  );
+};
 
 export default App
