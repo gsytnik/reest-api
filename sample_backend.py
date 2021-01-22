@@ -59,14 +59,14 @@ def get_users():
       userToAdd["id"] = random.randint(0, 999999)
       
       users['users_list'].append(userToAdd)
-      resp = jsonify(success=True)
+      resp = jsonify(userToAdd)
       resp.status_code = 201 #optionally, you can always set a response code.  
       # 200 is the default code for a normal response
       return resp
    elif request.method == 'DELETE':
       userToRemove = request.get_json()
       users['users_list'].remove(userToRemove)
-      resp = jsonify(success=True)
+      resp = jsonify(userToRemove)
       resp.status_code = 204
       #resp.status_code = 200 #optionally, you can always set a response code. 
       # 200 is the default code for a normal response
@@ -84,8 +84,8 @@ def get_user(id):
       return ({})
    return users
 
-@app.route('/jobs/<job>')
-def get_job(job):
+@app.route('/users/<job>')
+def get_users_by_job(job):
    if job :
    	  subdict = {'users_list' : []}
    	  for user in users['users_list']:
@@ -95,8 +95,8 @@ def get_job(job):
    	  return ({})
    return users
 
-@app.route('/names/<name>')
-def get_name(name):
+@app.route('/users/<name>')
+def get_users_by_name(name):
    if name :
    	  subdict = {'users_list' : []}
    	  for user in users['users_list']:
